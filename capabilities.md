@@ -1,47 +1,130 @@
-# Capabilities Configuration
+# ProfitPaw — 配置文档
 
-## Analysis
-Based on guide analysis (keyword scan of us.md + Chinese guide):
-- WidgetKit home-screen/lock-screen widget → **WidgetKit extension target + App Group**
-- APNs push (daily digest, anomaly alerts) → **Push Notifications**
-- Invoice photo capture → Camera / Photo Library usage strings
-- Face ID unlock → NSFaceIDUsageDescription
-- No iCloud, no Watch, no IAP (iOS side), no HealthKit, no Location
+生成时间：2026-10-13
 
-## Project Structure (xcodegen — single source of truth)
-- `project.yml`: App target `ProfitPaw` (com.zzoutuo.ProfitPaw) + extension `ProfitPawWidget` (com.zzoutuo.ProfitPaw.Widget, `com.apple.widgetkit-extension`)
-- Deployment target iOS 17.0, DEVELOPMENT_TEAM JP4TN5PTS3 baked at project level
+---
 
-## Auto-Configured Capabilities
-| Capability | Status | Method |
-|------------|--------|--------|
-| WidgetKit extension target | ✅ Configured | project.yml + xcodegen |
-| App Group entitlements (both targets) | ✅ In entitlements files | `group.com.zzoutuo.ProfitPaw` in ProfitPaw.entitlements + ProfitPawWidget.entitlements |
-| Push Notifications entitlement | ✅ In entitlements file | `aps-environment: development` (ProfitPaw.entitlements) |
-| Portal: bundle IDs registered | ✅ Via ASC API | com.zzoutuo.ProfitPaw (id 28VVX4JJA9), com.zzoutuo.ProfitPaw.Widget (id UR5778D748) |
-| Portal: PUSH_NOTIFICATIONS capability | ✅ Via ASC API | Enabled on app bundle ID |
-| Portal: APP_GROUPS capability | ✅ Via ASC API | Enabled on both bundle IDs |
-| Face ID / Camera / Photo usage strings | ✅ Info.plist keys via project.yml | INFOPLIST_KEY_NSFaceIDUsageDescription / NSCameraUsageDescription / NSPhotoLibraryUsageDescription |
-| PrivacyInfo.xcprivacy | ✅ Both targets | App: UserDefaults(CA92.1) + FileTimestamp(C617.1); Widget: UserDefaults(CA92.1); NSPrivacyTracking false, no collected data |
-| App Icon | ✅ Agnes Image 2.1 Flash | Shiba paw + money bag on #F97316; RGB, no alpha (see icon.md) |
+## 一、⚠️ 手动配置（增强功能 — 不配置不影响基本使用）
 
-## Manual Configuration Required
-| Capability | Status | Steps |
-|------------|--------|-------|
-| **App Group `group.com.zzoutuo.ProfitPaw` portal registration** | ⏳ Blocked — Individual developer account cannot access the ASC API `/v1/appGroups` endpoint (404); requires Apple ID authentication | **Option A (recommended)**: Xcode → Settings → Accounts → sign in with the Apple ID of team JP4TN5PTS3, then run: `xcodebuild -project ProfitPaw.xcodeproj -scheme ProfitPaw -destination 'generic/platform=iOS' -allowProvisioningUpdates build` — Xcode auto-registers the group + regenerates profiles. **Option B**: developer.apple.com → Certificates, Identifiers & Profiles → Identifiers → App Groups → register `group.com.zzoutuo.ProfitPaw` → attach to both App IDs → tell the assistant to recreate profiles. |
-| Device build signing verification (generic/platform=iOS) | ⏳ Pending same blocker | Re-run after App Group registration above |
-| GLM appId registration (`profitpaw` at cramjam Worker `/admin/apps`) | ⏳ Manual (needs ADMIN_KEY from GLM-Cloudflare repo) | curl POST per guide §5.6.5; required before invoice-scan/deep-diagnosis cloud calls |
-| APNs push (real device) | ⏳ Degrades gracefully | App works without push; local threshold notifications still function |
+> **重要说明**：以下配置项均为**增强功能**。不配置这些项，App 仍可正常使用所有核心功能（演示商店数据 + 真实利润计算 + 端侧 AI 问答 + Widget 空态兜底）。配置后获得完整体验。
 
-## No Configuration Needed
-- iCloud / CloudKit (not in scope), Apple Watch (not in scope), IAP (iOS side is free — Shopify Billing on web), HealthKit, Location, Background Modes (remote-notification only)
+### 🟡 1. App Group 门户注册（Widget 数据共享 + 真机签名）
 
-## Verification
-- Build succeeded after configuration: ✅ (simulator, iPhone 17 / iOS 27.0, includes icon asset)
-- All entitlements correct: ✅ (files) / ⏳ portal App Group pending
-- Signing verification (generic/platform=iOS): ⏳ blocked on App Group portal registration (cert JP4TN5PTS3 present in keychain; ASC API dev profiles "ProfitPaw Dev Auto" + "ProfitPaw Widget Dev Auto" created & installed locally as interim)
-- DEVELOPMENT_TEAM: JP4TN5PTS3 baked at project level
-- PrivacyInfo.xcprivacy: App + Widget both covered
+**增强功能**：主屏/锁屏 Widget 显示真实利润数字；真机 Archive 签名通过
+**不配置的影响**：App 完全可用；Widget 显示"Open ProfitPaw"引导态；真机构建签名验证被阻塞（模拟器构建不受影响）
+**当前状态**：模拟器构建已通过；ASC API 已注册两个 Bundle ID 并启用 APP_GROUPS/PUSH 能力；因账户为 Individual，无法经 API 创建 App Group（/v1/appGroups 返回 404）
 
-## Interim Signing Assets (created this session)
-- Development profiles installed locally: `ProfitPaw Dev Auto` (JHKQ3P7NCR), `ProfitPaw Widget Dev Auto` (DUKHZR6JD9) — both contain EMPTY application-groups array (portal limitation). They are superseded by Xcode auto-provisioning once the App Group is registered.
+**已自动配置部分**：
+- ✅ 两个 target 的 entitlements 已含 `group.com.zzoutuo.ProfitPaw`
+- ✅ 门户 Bundle ID `com.zzoutuo.ProfitPaw`(28VVX4JJA9) 与 `com.zzoutuo.ProfitPaw.Widget`(UR5778D748) 已注册并启用 APP_GROUPS + PUSH_NOTIFICATIONS 能力
+- ✅ Widget 代码已实现空态优雅降级
+- ✅ ASC API 开发描述文件已创建并本地安装（ProfitPaw Dev Auto / ProfitPaw Widget Dev Auto，含空 App Group 数组，将被下述步骤取代）
+
+**如需启用，请手动配置（二选一）**：
+- **方案 A（推荐，2 分钟）**：Xcode → Settings → Accounts → 登录 team JP4TN5PTS3 的 Apple ID，然后在项目目录执行：
+  `xcodebuild -project ProfitPaw.xcodeproj -scheme ProfitPaw -destination 'generic/platform=iOS' -allowProvisioningUpdates build`
+  Xcode 会自动注册 App Group 并重生成全部描述文件
+- **方案 B**：[developer.apple.com](https://developer.apple.com) → Certificates, Identifiers & Profiles → Identifiers → App Groups → 注册 `group.com.zzoutuo.ProfitPaw` → 分别编辑两个 App ID 勾选该 group → 完成后告知 AI 重建描述文件
+- ⚠️ 配置完成后需要重新 Build 验证（完成后本项状态改为 ✅）
+
+### 🟡 2. GLM 云 AI 接入（发票扫描 + 深度诊断）
+
+**增强功能**：AI 发票拍照识别、每周 GLM 深度归因诊断（周报卡走端侧规则引擎兜底，已可用）
+**不配置的影响**：云 AI 两项不可用，App 显示友好引导（用户可自带 API Key 无限使用）；日常问答走 Apple Intelligence 端侧不受影响
+**当前状态**：GLMProxySecret.txt 为占位注释（运行时视为未配置 → 优雅降级）
+
+**配置步骤**：
+1. 从 GLM-Cloudflare 仓库文档《TR-20260917-CramJam-Cloudflare代理配置指南.MD》§8.1 获取 ADMIN_KEY
+2. 注册 appId（立即生效）：
+   ```bash
+   curl -X POST "https://cramjam-api.calcs.top/admin/apps" \
+     -H "Content-Type: application/json" \
+     -d '{"adminKey":"<ADMIN_KEY>","appId":"profitpaw","bundleId":"com.zzoutuo.ProfitPaw","note":"ProfitPaw Shopify 真利润看板"}'
+   ```
+3. 从同仓库 GLMProxySecret.txt 复制真实 devKey，粘贴到项目根目录 `GLMProxySecret.txt`（首行注释下，单独一行；该文件已被 .gitignore 排除，不会入库）
+4. 端到端测试：App 内 Settings → AI Tools → Scan Invoice 拍一张发票 → 应返回结构化 JSON
+5. 生产上线前：为 ProfitPaw 自有 Next.js 服务端申请 Z.ai GLM Key 注入服务端 Secret（App 端无需改动，见指南 §5.6.5）
+
+### 🟢 3. App Store Connect 审核信息（上架时）
+
+**影响功能**：不配置可能导致 Guideline 2.1(a) 审核沟通低效
+
+**配置步骤**：
+1. App Store Connect → 你的 App → **App Review Information**
+2. **Notes** 字段粘贴项目根目录 `app_review_info.md` 的 Review Notes 部分（已含：演示数据说明、AI/BYO 合规声明、Widget/推送降级说明）
+3. **Privacy Policy URL** 填：`https://asunnyboy861.github.io/ProfitPaw/privacy.html`
+4. **Support URL** 填：`https://asunnyboy861.github.io/ProfitPaw/support.html`
+5. 本 App 无 IAP 无订阅，无需 Demo Account（演示商店离线可用）
+
+### 🔵 4. 落地页 App Store ID（上架后）
+
+**影响功能**：落地页下载按钮从 "Coming Soon" 变为真实 App Store 链接
+**配置步骤**：App Store Connect 创建 App 拿到 Apple ID（数字）→ 替换 `docs/index.html` 中的 `[APP_STORE_ID]` → git push（GitHub Pages 自动重新部署）
+
+---
+
+## 二、✅ 自动配置记录（已由系统完成，无需操作）
+
+### Capabilities 自动配置
+
+| Capability | 说明 | 状态 |
+|------------|------|------|
+| WidgetKit 扩展 target | project.yml 生成，含 small/medium/lock screen | ✅ 已配置 |
+| App Group entitlements | 两 target 均已写入 | ✅ 已配置（门户注册见上） |
+| Push Notifications | aps-environment + 门户能力已启用 | ✅ 已配置 |
+| Face ID / 相机 / 相册 usage strings | Info.plist 键已生成 | ✅ 已配置 |
+| PrivacyInfo.xcprivacy | App + Widget 两份（UserDefaults CA92.1 / FileTimestamp C617.1） | ✅ 已配置 |
+| App 图标 | Agnes Image 2.1 Flash 生成，RGB 无 alpha，已入 catalog | ✅ 已配置 |
+| 品牌色全局生效 | ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME=AccentColor | ✅ 已配置 |
+| 出口合规 | ITSAppUsesNonExemptEncryption=NO | ✅ 已配置 |
+
+### 后端服务
+
+| 服务 | 说明 | 状态 |
+|------|------|------|
+| 联系客服后端 | https://msg.calcs.top/api/feedback 已硬编码进 ContactSupportView | ✅ 已部署 |
+| GLM 云代理（dev 通道） | cramjam-api.calcs.top（备用 workers.dev）双通道故障切换已实现 | ✅ 已部署（appId 注册见上） |
+
+### 代码生成
+
+| 模块 | 说明 | 状态 |
+|------|------|------|
+| 核心功能 | 13/13 功能 MVVM 实现（PnlEngine Decimal 纯函数引擎） | ✅ 已完成 |
+| ContactSupportView | 7 主题图块 + 5 必填字段 + 成功/失败反馈 | ✅ 已完成（COMPLIANCE-CS 11/11） |
+| AI 模块 | Apple Intelligence 端侧默认 + 6 预设 BYO 多供应商（Keychain）+ GLM 云端 | ✅ 已完成（合规校验 13/13 通过） |
+| IAP/StoreKit | 按 price.md 无 IAP（免费伴侣 App） | N/A |
+| QA 迭代 | improvement_plan_1（12 项修复）+ 模拟器实测 | ✅ 已完成 |
+
+### 💡 使用提示（非开发者配置，App 内操作即可）
+
+**AI 功能**：App 默认使用 Apple Intelligence（iOS 26+ 设备端，免费无限）。不支持的设备可在 **Settings → AI Settings** 添加自己的 API Key（OpenAI / Gemini / Claude / DeepSeek / GLM / 自定义端点），Key 存 Keychain，用量不受任何套餐限制。
+
+### 部署
+
+| 项目 | 说明 | 状态 |
+|------|------|------|
+| GitHub 仓库 | https://github.com/asunnyboy861/ProfitPaw（main 已推送） | ✅ 已完成 |
+| GitHub Pages | 政策页 + 落地页已上线（status: built） | ✅ 已完成 |
+| App Store 元数据 | keytext.md 已生成并通过 15 项校验（副标题 23 字符 / Keywords 96 字符） | ✅ 已完成 |
+| 定价配置 | price.md（iOS 免费，无 IAP） | ✅ 已完成 |
+
+---
+
+## 三、能力检测详情
+
+> 以下为 PHASE 2 原始检测数据，内容已重组到上方 Section 一/二。
+
+### Analysis
+
+基于 us.md 与中文指南关键词扫描：WidgetKit（主屏/锁屏 Widget）→ 扩展 target + App Group；推送（每日摘要/异常预警）→ Push Notifications；发票拍照 → 相机/相册；Face ID 解锁 → NSFaceIDUsageDescription。无 iCloud、无 Watch、无 IAP（iOS 端免费伴侣 App）、无 HealthKit、无定位。
+
+### No Configuration Needed
+
+- iCloud / CloudKit、Apple Watch、IAP（StoreKit）、HealthKit、Location、后台模式（仅 remote-notification）
+
+### Verification
+
+- 模拟器构建（iPhone 17 / iOS 27.0 + iPad Pro 13-inch M5）：✅ BUILD SUCCEEDED + 运行实测通过
+- 真机签名验证（generic/platform=iOS）：⏳ 待 App Group 门户注册（Section 一.1）
+- DEVELOPMENT_TEAM：JP4TN5PTS3 已烘焙至项目级
+- PrivacyInfo.xcprivacy：App + Widget 双覆盖
