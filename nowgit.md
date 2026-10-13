@@ -9,15 +9,15 @@
 | **Repo URL** | https://github.com/asunnyboy861/ProfitPaw |
 | **Visibility** | Public |
 | **Primary Language** | Swift |
-| **GitHub Pages** | ⏳ Pending (enabled in PHASE 7 from `/docs` folder) |
+| **GitHub Pages** | ✅ **ENABLED** (from `/docs` folder) |
 
 ## Policy Pages (Deployed from Main Repository /docs)
 
 | Page | URL | Status |
 |------|-----|--------|
-| Landing Page | https://asunnyboy861.github.io/ProfitPaw/ | ⏳ Pending |
-| Support | https://asunnyboy861.github.io/ProfitPaw/support.html | ⏳ Pending |
-| Privacy Policy | https://asunnyboy861.github.io/ProfitPaw/privacy.html | ⏳ Pending |
+| Landing Page | https://asunnyboy861.github.io/ProfitPaw/ | ✅ Active |
+| Support | https://asunnyboy861.github.io/ProfitPaw/support.html | ✅ Active |
+| Privacy Policy | https://asunnyboy861.github.io/ProfitPaw/privacy.html | ✅ Active |
 | Terms of Use | — | N/A (free iOS app, no IAP — 2 policy pages only) |
 
 ## Repository Structure
