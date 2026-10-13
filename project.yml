@@ -39,6 +39,8 @@ targets:
         INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "ProfitPaw can read invoice photos from your library to extract item costs with AI."
         INFOPLIST_KEY_UIBackgroundModes: remote-notification
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         CODE_SIGN_ENTITLEMENTS: ProfitPaw/ProfitPaw.entitlements
   ProfitPawWidget:
     type: app-extension
@@ -53,5 +55,6 @@ targets:
     info:
       path: ProfitPawWidget/Info.plist
       properties:
+        CFBundleDisplayName: ProfitPaw Widget
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension

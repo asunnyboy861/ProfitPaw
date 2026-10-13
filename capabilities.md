@@ -8,24 +8,9 @@
 
 > **重要说明**：以下配置项均为**增强功能**。不配置这些项，App 仍可正常使用所有核心功能（演示商店数据 + 真实利润计算 + 端侧 AI 问答 + Widget 空态兜底）。配置后获得完整体验。
 
-### 🟡 1. App Group 门户注册（Widget 数据共享 + 真机签名）
+### 🟡 1. App Group 门户注册（Widget 数据共享 + 真机签名）— ✅ 已完成（2026-10-13）
 
-**增强功能**：主屏/锁屏 Widget 显示真实利润数字；真机 Archive 签名通过
-**不配置的影响**：App 完全可用；Widget 显示"Open ProfitPaw"引导态；真机构建签名验证被阻塞（模拟器构建不受影响）
-**当前状态**：模拟器构建已通过；ASC API 已注册两个 Bundle ID 并启用 APP_GROUPS/PUSH 能力；因账户为 Individual，无法经 API 创建 App Group（/v1/appGroups 返回 404）
-
-**已自动配置部分**：
-- ✅ 两个 target 的 entitlements 已含 `group.com.zzoutuo.ProfitPaw`
-- ✅ 门户 Bundle ID `com.zzoutuo.ProfitPaw`(28VVX4JJA9) 与 `com.zzoutuo.ProfitPaw.Widget`(UR5778D748) 已注册并启用 APP_GROUPS + PUSH_NOTIFICATIONS 能力
-- ✅ Widget 代码已实现空态优雅降级
-- ✅ ASC API 开发描述文件已创建并本地安装（ProfitPaw Dev Auto / ProfitPaw Widget Dev Auto，含空 App Group 数组，将被下述步骤取代）
-
-**如需启用，请手动配置（二选一）**：
-- **方案 A（推荐，2 分钟）**：Xcode → Settings → Accounts → 登录 team JP4TN5PTS3 的 Apple ID，然后在项目目录执行：
-  `xcodebuild -project ProfitPaw.xcodeproj -scheme ProfitPaw -destination 'generic/platform=iOS' -allowProvisioningUpdates build`
-  Xcode 会自动注册 App Group 并重生成全部描述文件
-- **方案 B**：[developer.apple.com](https://developer.apple.com) → Certificates, Identifiers & Profiles → Identifiers → App Groups → 注册 `group.com.zzoutuo.ProfitPaw` → 分别编辑两个 App ID 勾选该 group → 完成后告知 AI 重建描述文件
-- ⚠️ 配置完成后需要重新 Build 验证（完成后本项状态改为 ✅）
+**已完成**：用户已在 Xcode 登录 Apple ID，自动签名（-allowProvisioningUpdates）已自动在门户注册 `group.com.zzoutuo.ProfitPaw` 并重生成全部描述文件。真机签名验证通过：签名 entitlements 与 Team Profile 均含 App Group + aps-environment（推送）。本项无剩余操作。
 
 ### 🟡 2. GLM 云 AI 接入（发票扫描 + 深度诊断）
 
@@ -125,6 +110,6 @@
 ### Verification
 
 - 模拟器构建（iPhone 17 / iOS 27.0 + iPad Pro 13-inch M5）：✅ BUILD SUCCEEDED + 运行实测通过
-- 真机签名验证（generic/platform=iOS）：⏳ 待 App Group 门户注册（Section 一.1）
+- 真机签名验证（generic/platform=iOS）：✅ 通过（2026-10-13，自动签名生效；签名与 Team Profile 均含 App Group + aps-environment）
 - DEVELOPMENT_TEAM：JP4TN5PTS3 已烘焙至项目级
 - PrivacyInfo.xcprivacy：App + Widget 双覆盖
