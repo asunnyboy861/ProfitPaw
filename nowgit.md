@@ -54,3 +54,16 @@ ProfitPaw/
 - iPhone 17 (iOS 27.0): BUILD SUCCEEDED + run test ✅ (onboarding → Home big number US$237.70 → waterfall → tabs)
 - iPad Pro 13-inch (M5, iOS 27.0): BUILD SUCCEEDED + run test ✅ (centered 720pt layout, full waterfall labels)
 - Security gate: 0 secret leaks staged, 0 tracked secret files
+
+## App Store Upload Log (2026-10-13)
+
+| Item | Value |
+|------|-------|
+| **ASC App ID** | 6822193826 |
+| **Build** | 1 (1.0) — uploaded & VALID, mounted to version 1.0 |
+| **Export fixes** | iPad orientations (project.yml) + widget CFBundleDisplayName |
+| **Entitlements check** | get-task-allow=false / App Group / aps=production — all PASS |
+| **Metadata** | name/subtitle/BUSINESS/age rating/description 3098ch/keywords 96ch/promo/review info — API filled |
+| **Pricing** | FREE $0, 175/175 territories (174 auto-equivalents + USA manual) |
+| **Landing page** | Real App Store ID backfilled → apps.apple.com/us/app/id6822193826 (live) |
+| **Manual remaining** | Screenshots upload + whatsNew (state-locked) + submit for review |
