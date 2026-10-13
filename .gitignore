@@ -1,0 +1,15 @@
+.env
+GLMProxySecret.txt
+keytext*.md
+COMPETITOR_REPORT.md
+app_audit*.md
+app_review_info.md
+improvement_plan_*.md
+icon_raw.png
+icon_1024.png
+.DS_Store
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xcresult
